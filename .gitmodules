@@ -13,3 +13,7 @@
 [submodule "Plugins/GraphFormatter"]
 	path = Plugins/GraphFormatter
 	url = https://github.com/howaajin/graphformatter.git
+[submodule "Plugins/ProjectCleaner"]
+	path = Plugins/ProjectCleaner
+	url = https://github.com/ashe23/ProjectCleaner.git
+	branch = 5.1

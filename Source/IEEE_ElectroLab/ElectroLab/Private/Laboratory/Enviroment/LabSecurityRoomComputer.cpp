@@ -126,10 +126,10 @@ void ALabSecurityRoomComputer::VfxInteraction()
 	{
 		VfxOverlay(true);
 	
-		if (WidgetPPEReference)
+		if (WidgetComputerReference)
 		{
-			WidgetPPE = GetWorld()->SpawnActor<ALabInteractionWidgetContainer>(WidgetPPEReference,ArrowComponent->GetComponentLocation(),ArrowComponent->GetComponentRotation());
-			WidgetPPE->SetComponentNameToDisplay(ComponentName);
+			WidgetComputer = GetWorld()->SpawnActor<ALabInteractionWidgetContainer>(WidgetComputerReference,ArrowComponent->GetComponentLocation(),ArrowComponent->GetComponentRotation());
+			WidgetComputer->SetComponentNameToDisplay(ComponentName);
 		}
 	}
 }
@@ -140,10 +140,10 @@ void ALabSecurityRoomComputer::VfxDisinteraction()
 	{
 		VfxOverlay(false);
 	
-		if (WidgetPPE)
+		if (WidgetComputer)
 		{
-			GetWorld()->DestroyActor(WidgetPPE);
-			WidgetPPE = nullptr;
+			GetWorld()->DestroyActor(WidgetComputer);
+			WidgetComputer = nullptr;
 		}
 	}
 }

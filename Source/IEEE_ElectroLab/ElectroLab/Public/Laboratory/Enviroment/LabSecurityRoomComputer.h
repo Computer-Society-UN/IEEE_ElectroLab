@@ -41,8 +41,8 @@ private:
 	UPROPERTY(Transient)
 	FTimerHandle TimerHandleResetInteraction = {};
 	
-	UPROPERTY(EditAnywhere, meta=(DisplayName="Component Name"), Category = "Computer|Properties")
-	FText ComponentName = { FText::FromString("Security Room Computer") };
+	UPROPERTY(EditDefaultsOnly, Transient, meta=(DisplayName="Component Name"), Category = "Computer|Properties")
+	FText ComponentName = { FText::FromString("Component Name") };
 
 	UPROPERTY(EditAnywhere, meta=(DisplayName="DataTable RowName"), Category = "Computer|Properties")
 	FName RowName = { FName("Lab_01") };
@@ -54,10 +54,10 @@ private:
 	TArray<TEnumAsByte<ESafetyEquipmentType>> EngineerEquipment = {};
 	
 	UPROPERTY(Transient)
-	TObjectPtr<ALabInteractionWidgetContainer> WidgetPPE = { nullptr };
+	TObjectPtr<ALabInteractionWidgetContainer> WidgetComputer = { nullptr };
 	
 	UPROPERTY(EditDefaultsOnly, Transient, meta=(DisplayName="Interactable Widget"), Category="Computer|Widget Actor")
-	TSubclassOf<ALabInteractionWidgetContainer> WidgetPPEReference = { nullptr };
+	TSubclassOf<ALabInteractionWidgetContainer> WidgetComputerReference = { nullptr };
 
 	/* ------------------------------ CLASS FUNCTIONS ------------------------------- */
 

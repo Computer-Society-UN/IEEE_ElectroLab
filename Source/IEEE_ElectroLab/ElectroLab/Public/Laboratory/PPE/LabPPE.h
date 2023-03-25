@@ -36,7 +36,7 @@ private:
 
 private:
 
-	UPROPERTY(EditDefaultsOnly, meta=(DisplayName="Component Name"), Category="PPE|Properties")
+	UPROPERTY(EditDefaultsOnly, Transient, meta=(DisplayName="Component Name"), Category="PPE|Properties")
 	FText ComponentName = { FText::FromString("Component Name") };
 
 	UPROPERTY(EditDefaultsOnly, meta=(DisplayName="Safety Equipment Type"), Category="PPE|Properties")

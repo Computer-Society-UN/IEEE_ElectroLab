@@ -45,12 +45,17 @@ void ULabUWSettingsMenu::NativeConstruct()
 		const FString ResolutionToAdd = FText::Format(FText::FromString("{0} x {1}"), Width, Heigh).ToString();
 		ComboBoxResolutions->AddOption(ResolutionToAdd);
 	}
-
+	
 	GameUserSettingsReference = UGameUserSettings::GetGameUserSettings();
 	PostProcessQualityReference = GameUserSettingsReference->GetPostProcessingQuality();
 	AntiAliasingQualityReference = GameUserSettingsReference->GetAntiAliasingQuality();
 	TextureQualityReference = GameUserSettingsReference->GetTextureQuality();
 	ShadowsQualityReference = GameUserSettingsReference->GetShadowQuality();
+
+	const FText Width = UKismetTextLibrary::Conv_IntToText(GameUserSettingsReference->GetScreenResolution().X,false,false,3,4);
+	const FText Heigh = UKismetTextLibrary::Conv_IntToText(GameUserSettingsReference->GetScreenResolution().Y,false,false,3,4);
+	const FString GameResolution = FText::Format(FText::FromString("{0} x {1}"), Width, Heigh).ToString();
+	ComboBoxResolutions->SetSelectedIndex(ComboBoxResolutions->FindOptionIndex(GameResolution));
 	
 	switch(GameUserSettingsReference->GetFullscreenMode())
 	{

@@ -27,8 +27,12 @@ private:
 	FTimerHandle TimerHandleMainMenu = {};
 	
 	/** UCommonButtonBase->OnButtonBaseClicked must be called from Blueprints. <BlueprintReadOnly Needed to reference in GetDesiredFocusTarget() BP Override> */
-	UPROPERTY(BlueprintReadOnly, meta=(BindWidget, DisplayName="Button New Game", AllowPrivateAccess="true"), Category="Main Menu|Buttons")
-	TObjectPtr<ULabCustomButton> ButtonNewGame = { nullptr };
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget, DisplayName="Button Online Simulation", AllowPrivateAccess="true"), Category="Main Menu|Buttons")
+	TObjectPtr<ULabCustomButton> ButtonOnlineSimulation = { nullptr };
+	
+	/** UCommonButtonBase->OnButtonBaseClicked must be called from Blueprints. <BlueprintReadOnly Needed to reference in GetDesiredFocusTarget() BP Override> */
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget, DisplayName="Button Offline Simulation", AllowPrivateAccess="true"), Category="Main Menu|Buttons")
+	TObjectPtr<ULabCustomButton> ButtonOfflineSimulation = { nullptr };
 	
 	UPROPERTY(Transient, meta = (BindWidget))
 	TObjectPtr<ULabCustomButton> ButtonControls = { nullptr };

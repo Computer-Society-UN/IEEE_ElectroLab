@@ -1,14 +1,12 @@
 # IEEE_ElectroLab
 
-###Pre-Alpha Version Download.
+### Pre-Alpha Version Download.
 
 Download Electrolab v0.1.10: <a href="https://github.com/Computer-Society-UN/IEEE_ElectroLab/releases/download/v0.1.10-Alpha/IEEE.Electrolab.0.1.10-alpha.rar" target="_blank">  Click Here  </a>
 
 <div align="center"> -------------------------------------------------------------------------------------------------------------------------------- </div>
 
 ### Power Substation Simulator.
-
-https://github.com/Computer-Society-UN/IEEE_ElectroLab/releases/download/v0.1.10-Alpha/IEEE.Electrolab.0.1.10-alpha.rar
 
 [ EN ] This repository has dependencies to other repositories, please use the following line to clone the repository correctly:
 

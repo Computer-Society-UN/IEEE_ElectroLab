@@ -6,6 +6,8 @@
 #include "Components/ArrowComponent.h"
 // User Defined Dependencies:
 #include "ElectroLab/Public/Core/LabGameState.h"
+#include "ElectroLab/Public/Laboratory/Enviroment/LabCheckStatusWidgetContainer.h"
+#include "ElectroLab/Public/Laboratory/Enviroment/LabCheckStatusProgressWidgetContainer.h"
 #include "ElectroLab/Public/Laboratory/PPE/LabInteractionWidgetContainer.h"
 
 	/* ---------------------------- FUNCTION DEFINITIONS ---------------------------- */
@@ -18,10 +20,13 @@ ALabSecurityRoomComputer::ALabSecurityRoomComputer()
 	RootComponent = CustomRootComponent;
 	
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("Computer Mesh"));
-	StaticMeshComponent ->SetupAttachment(RootComponent);
+	StaticMeshComponent->SetupAttachment(RootComponent);
 	
-	ArrowComponent = CreateDefaultSubobject<UArrowComponent>(FName("Computer Arrow Direction"));
-	ArrowComponent ->SetupAttachment(RootComponent);
+	ArrowComponentInteraction = CreateDefaultSubobject<UArrowComponent>(FName("Computer Arrow Interaction"));
+	ArrowComponentInteraction->SetupAttachment(RootComponent);
+	
+	ArrowComponentStatus = CreateDefaultSubobject<UArrowComponent>(FName("Computer Arrow Status"));
+	ArrowComponentStatus->SetupAttachment(RootComponent);
 }
 
 void ALabSecurityRoomComputer::BeginPlay()
@@ -34,56 +39,143 @@ void ALabSecurityRoomComputer::BeginPlay()
 	}
 }
 
-void ALabSecurityRoomComputer::StaticInteraction()
+void ALabSecurityRoomComputer::StaticInteraction(){}
+
+void ALabSecurityRoomComputer::OnGoingDynamicInteraction(const float HoldTime)
 {
 	if (bCanInteract)
 	{
-		if (IsValid(LaboratoriesDataTable))
+		if (!IsValid(WidgetCheckProgress) && IsValid(WidgetCheckProgressReference))
 		{
-			if(const FLaboratoryData* LevelDataToBeLoaded = LaboratoriesDataTable->FindRow<FLaboratoryData>(RowName,TEXT("")))
-			{
-				if (LevelDataToBeLoaded->EquipmentToCheck.Num() == 0)
-				{
-					if (const TObjectPtr<ALabGameState> GameStateRef = GetWorld()->GetGameState<ALabGameState>())
-					{
-						GameStateRef->OnSafetyEquipmentCheckedDelegate.Broadcast(false);
-						UE_LOG(LogTemp, Error, TEXT("SECURITY ROOM COMPUTER: No Equipment To Check"));
+			WidgetCheckProgress = GetWorld()->SpawnActor<ALabCheckStatusProgressWidgetContainer>(WidgetCheckProgressReference,ArrowComponentStatus->GetComponentLocation(),ArrowComponentStatus->GetComponentRotation());
+			WidgetCheckProgress->CheckProgressTime(HoldTime);
+		}
+		else
+		{
+			WidgetCheckProgress->CheckProgressTime(HoldTime);
+		}
+	}
+}
 
-						VfxDisinteraction();
-						bCanInteract = false;
-						GetWorld()->GetTimerManager().SetTimer(TimerHandleResetInteraction, this, &ALabSecurityRoomComputer::ResetInteraction, 5.0f, false);
+void ALabSecurityRoomComputer::CancelDynamicInteraction()
+{
+	if (bCanInteract)
+	{
+		if (IsValid(WidgetCheckProgress))
+		{
+			WidgetCheckProgress->Destroy();
+			WidgetCheckProgress = nullptr;
+		}
+	}
+}
+
+void ALabSecurityRoomComputer::TriggerDynamicInteraction()
+{
+	if (bInteractionCheck)
+	{
+		bInteractionCheck = false;
+
+		if (IsValid(WidgetCheckProgress))
+		{
+			WidgetCheckProgress->Destroy();
+			WidgetCheckProgress = nullptr;
+		}
+		
+		if (bCanInteract)
+		{
+			if (IsValid(LaboratoriesDataTable))
+			{
+				if(const FLaboratoryData* LevelDataToBeLoaded = LaboratoriesDataTable->FindRow<FLaboratoryData>(RowName,TEXT("")))
+				{
+					if (LevelDataToBeLoaded->EquipmentToCheck.Num() == 0)
+					{
+						if (const TObjectPtr<ALabGameState> GameStateRef = GetWorld()->GetGameState<ALabGameState>())
+						{
+							GameStateRef->OnSafetyEquipmentCheckedDelegate.Broadcast(false);
+							UE_LOG(LogTemp, Error, TEXT("SECURITY ROOM COMPUTER: No Equipment To Check"));
+
+							VfxDisinteraction();
+							bCanInteract = false;
+							GetWorld()->GetTimerManager().SetTimer(TimerHandleResetInteraction, this, &ALabSecurityRoomComputer::ResetInteraction, 5.0f, false);
+
+							if (WidgetCheckStatusReference)
+							{
+								WidgetCheckStatus = GetWorld()->SpawnActor<ALabCheckStatusWidgetContainer>(WidgetCheckStatusReference,ArrowComponentStatus->GetComponentLocation(),ArrowComponentStatus->GetComponentRotation());
+								WidgetCheckStatus->CheckStatusResult(false);
+							}
+						}
+					}
+					else
+					{
+						if (const TObjectPtr<ALabGameState> GameStateRef = GetWorld()->GetGameState<ALabGameState>())
+						{
+							GameStateRef->OnSafetyEquipmentNeedToBeCheckedDelegate.Broadcast();
+
+							if (EngineerEquipment.Num() > 0)
+							{
+								for (auto& Equipment : LevelDataToBeLoaded->EquipmentToCheck)
+								{
+									if ( EngineerEquipment.Find(Equipment) == -1)
+									{
+										GameStateRef->OnSafetyEquipmentCheckedDelegate.Broadcast(false);
+										VfxDisinteraction();
+										bCanInteract = false;
+										GetWorld()->GetTimerManager().SetTimer(TimerHandleResetInteraction, this, &ALabSecurityRoomComputer::ResetInteraction, 5.0f, false);
+
+										if (WidgetCheckStatusReference)
+										{
+											WidgetCheckStatus = GetWorld()->SpawnActor<ALabCheckStatusWidgetContainer>(WidgetCheckStatusReference,ArrowComponentStatus->GetComponentLocation(),ArrowComponentStatus->GetComponentRotation());
+											WidgetCheckStatus->CheckStatusResult(false);
+										}
+										
+										return;
+									}
+								}
+								
+								GameStateRef->OnSafetyEquipmentCheckedDelegate.Broadcast(true);
+								VfxDisinteraction();
+								bCanInteract = false;
+								
+								if (WidgetCheckStatusReference)
+								{
+									WidgetCheckStatus = GetWorld()->SpawnActor<ALabCheckStatusWidgetContainer>(WidgetCheckStatusReference,ArrowComponentStatus->GetComponentLocation(),ArrowComponentStatus->GetComponentRotation());
+									WidgetCheckStatus->CheckStatusResult(true);
+								}
+
+								/* We remove the reference, because from Blueprints we are destroying it. */
+								WidgetCheckStatus = nullptr;
+							}
+							else
+							{
+								GameStateRef->OnSafetyEquipmentCheckedDelegate.Broadcast(false);
+								VfxDisinteraction();
+								bCanInteract = false;
+								GetWorld()->GetTimerManager().SetTimer(TimerHandleResetInteraction, this, &ALabSecurityRoomComputer::ResetInteraction, 5.0f, false);
+
+								if (WidgetCheckStatusReference)
+								{
+									WidgetCheckStatus = GetWorld()->SpawnActor<ALabCheckStatusWidgetContainer>(WidgetCheckStatusReference,ArrowComponentStatus->GetComponentLocation(),ArrowComponentStatus->GetComponentRotation());
+									WidgetCheckStatus->CheckStatusResult(false);
+								}
+							}
+						}
 					}
 				}
 				else
 				{
 					if (const TObjectPtr<ALabGameState> GameStateRef = GetWorld()->GetGameState<ALabGameState>())
 					{
-						GameStateRef->OnSafetyEquipmentNeedToBeCheckedDelegate.Broadcast();
+						GameStateRef->OnSafetyEquipmentCheckedDelegate.Broadcast(false);
+						UE_LOG(LogTemp, Error, TEXT("SECURITY ROOM COMPUTER: RowName On DataTable Not Found"));
 
-						if (EngineerEquipment.Num() > 0)
+						VfxDisinteraction();
+						bCanInteract = false;
+						GetWorld()->GetTimerManager().SetTimer(TimerHandleResetInteraction, this, &ALabSecurityRoomComputer::ResetInteraction, 5.0f, false);
+
+						if (WidgetCheckStatusReference)
 						{
-							for (auto& Equipment : LevelDataToBeLoaded->EquipmentToCheck)
-							{
-								if ( EngineerEquipment.Find(Equipment) == -1)
-								{
-									GameStateRef->OnSafetyEquipmentCheckedDelegate.Broadcast(false);
-									VfxDisinteraction();
-									bCanInteract = false;
-									GetWorld()->GetTimerManager().SetTimer(TimerHandleResetInteraction, this, &ALabSecurityRoomComputer::ResetInteraction, 5.0f, false);
-									return;
-								}
-							}
-							
-							GameStateRef->OnSafetyEquipmentCheckedDelegate.Broadcast(true);
-							VfxDisinteraction();
-							bCanInteract = false;
-						}
-						else
-						{
-							GameStateRef->OnSafetyEquipmentCheckedDelegate.Broadcast(false);
-							VfxDisinteraction();
-							bCanInteract = false;
-							GetWorld()->GetTimerManager().SetTimer(TimerHandleResetInteraction, this, &ALabSecurityRoomComputer::ResetInteraction, 5.0f, false);
+							WidgetCheckStatus = GetWorld()->SpawnActor<ALabCheckStatusWidgetContainer>(WidgetCheckStatusReference,ArrowComponentStatus->GetComponentLocation(),ArrowComponentStatus->GetComponentRotation());
+							WidgetCheckStatus->CheckStatusResult(false);
 						}
 					}
 				}
@@ -93,31 +185,21 @@ void ALabSecurityRoomComputer::StaticInteraction()
 				if (const TObjectPtr<ALabGameState> GameStateRef = GetWorld()->GetGameState<ALabGameState>())
 				{
 					GameStateRef->OnSafetyEquipmentCheckedDelegate.Broadcast(false);
-					UE_LOG(LogTemp, Error, TEXT("SECURITY ROOM COMPUTER: RowName On DataTable Not Found"));
+					UE_LOG(LogTemp, Error, TEXT("SECURITY ROOM COMPUTER: DataTable Not Valid"));
 
 					VfxDisinteraction();
 					bCanInteract = false;
 					GetWorld()->GetTimerManager().SetTimer(TimerHandleResetInteraction, this, &ALabSecurityRoomComputer::ResetInteraction, 5.0f, false);
+
+					if (WidgetCheckStatusReference)
+					{
+						WidgetCheckStatus = GetWorld()->SpawnActor<ALabCheckStatusWidgetContainer>(WidgetCheckStatusReference,ArrowComponentStatus->GetComponentLocation(),ArrowComponentStatus->GetComponentRotation());
+						WidgetCheckStatus->CheckStatusResult(false);
+					}
 				}
 			}
 		}
-		else
-		{
-			if (const TObjectPtr<ALabGameState> GameStateRef = GetWorld()->GetGameState<ALabGameState>())
-			{
-				GameStateRef->OnSafetyEquipmentCheckedDelegate.Broadcast(false);
-				UE_LOG(LogTemp, Error, TEXT("SECURITY ROOM COMPUTER: DataTable Not Valid"));
-
-				VfxDisinteraction();
-				bCanInteract = false;
-				GetWorld()->GetTimerManager().SetTimer(TimerHandleResetInteraction, this, &ALabSecurityRoomComputer::ResetInteraction, 5.0f, false);
-			}
-		}
 	}
-}
-
-void ALabSecurityRoomComputer::DynamicInteraction()
-{
 }
 
 void ALabSecurityRoomComputer::VfxInteraction()
@@ -126,10 +208,10 @@ void ALabSecurityRoomComputer::VfxInteraction()
 	{
 		VfxOverlay(true);
 	
-		if (WidgetComputerReference)
+		if (WidgetInteractionReference)
 		{
-			WidgetComputer = GetWorld()->SpawnActor<ALabInteractionWidgetContainer>(WidgetComputerReference,ArrowComponent->GetComponentLocation(),ArrowComponent->GetComponentRotation());
-			WidgetComputer->SetComponentNameToDisplay(ComponentName);
+			WidgetInteraction = GetWorld()->SpawnActor<ALabInteractionWidgetContainer>(WidgetInteractionReference,ArrowComponentInteraction->GetComponentLocation(),ArrowComponentInteraction->GetComponentRotation());
+			WidgetInteraction->SetComponentNameToDisplay(ComponentName, InteractionType);
 		}
 	}
 }
@@ -140,10 +222,10 @@ void ALabSecurityRoomComputer::VfxDisinteraction()
 	{
 		VfxOverlay(false);
 	
-		if (WidgetComputer)
+		if (WidgetInteraction)
 		{
-			GetWorld()->DestroyActor(WidgetComputer);
-			WidgetComputer = nullptr;
+			GetWorld()->DestroyActor(WidgetInteraction);
+			WidgetInteraction = nullptr;
 		}
 	}
 }
@@ -156,4 +238,11 @@ void ALabSecurityRoomComputer::ReceiveEquipmentToCheck(TArray<TEnumAsByte<ESafet
 void ALabSecurityRoomComputer::ResetInteraction()
 {
 	bCanInteract = true;
+	bInteractionCheck = true;
+
+	if (WidgetCheckStatus)
+	{
+		WidgetCheckStatus->Destroy();
+		WidgetCheckStatus = nullptr;
+	}
 }

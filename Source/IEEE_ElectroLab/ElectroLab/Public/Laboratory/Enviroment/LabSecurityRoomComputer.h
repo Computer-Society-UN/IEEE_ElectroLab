@@ -12,6 +12,9 @@
 // Forward Declarations
 class UArrowComponent;
 class ALabInteractionWidgetContainer;
+class ALabCheckStatusWidgetContainer;
+class ALabCheckStatusProgressWidgetContainer;
+enum EInputDataActions;
 
 UCLASS(HideCategories = (Rendering, Replication, Input, Actor, Collision, LOD, Cooking, HLOD))
 class IEEE_ELECTROLAB_API ALabSecurityRoomComputer : public AActor, public ILabIInteractable
@@ -21,9 +24,6 @@ class IEEE_ELECTROLAB_API ALabSecurityRoomComputer : public AActor, public ILabI
 	/* ------------------------------ CLASS COMPONENTS ------------------------------ */
 
 private:
-
-	UPROPERTY()
-	bool bCanInteract = true;
 	
 	UPROPERTY(VisibleDefaultsOnly, Transient, meta=(DisplayName="Root"))
 	TObjectPtr<USceneComponent> CustomRootComponent = { nullptr };
@@ -32,7 +32,10 @@ private:
 	TObjectPtr<UStaticMeshComponent> StaticMeshComponent = { nullptr };
 	
 	UPROPERTY(EditDefaultsOnly, Transient)
-	TObjectPtr<UArrowComponent> ArrowComponent = { nullptr };
+	TObjectPtr<UArrowComponent> ArrowComponentInteraction = { nullptr };
+	
+	UPROPERTY(EditDefaultsOnly, Transient)
+	TObjectPtr<UArrowComponent> ArrowComponentStatus = { nullptr };
 	
 	/* ------------------------------ CLASS PROPERTIES ------------------------------ */
 
@@ -40,6 +43,12 @@ private:
 
 	UPROPERTY(Transient)
 	FTimerHandle TimerHandleResetInteraction = {};
+
+	UPROPERTY()
+	bool bCanInteract = true;
+
+	UPROPERTY()
+	bool bInteractionCheck = true;
 	
 	UPROPERTY(EditDefaultsOnly, Transient, meta=(DisplayName="Component Name"), Category = "Computer|Properties")
 	FText ComponentName = { FText::FromString("Component Name") };
@@ -47,6 +56,9 @@ private:
 	UPROPERTY(EditAnywhere, meta=(DisplayName="DataTable RowName"), Category = "Computer|Properties")
 	FName RowName = { FName("Lab_01") };
 
+	UPROPERTY(EditDefaultsOnly, meta=(DisplayName="Computer Interaction Type"), Category="PPE|Properties")
+	TEnumAsByte<EInputDataActions> InteractionType = {};
+	
 	UPROPERTY(EditAnywhere, meta=(DisplayName="Laboratories Data Table"), Category = "Computer|Properties")
 	TObjectPtr<UDataTable> LaboratoriesDataTable = { nullptr };
 
@@ -54,10 +66,22 @@ private:
 	TArray<TEnumAsByte<ESafetyEquipmentType>> EngineerEquipment = {};
 	
 	UPROPERTY(Transient)
-	TObjectPtr<ALabInteractionWidgetContainer> WidgetComputer = { nullptr };
+	TObjectPtr<ALabInteractionWidgetContainer> WidgetInteraction = { nullptr };
 	
+	UPROPERTY(Transient)
+	TObjectPtr<ALabCheckStatusWidgetContainer> WidgetCheckStatus = { nullptr };
+	
+	UPROPERTY(Transient)
+	TObjectPtr<ALabCheckStatusProgressWidgetContainer> WidgetCheckProgress = { nullptr };
+
 	UPROPERTY(EditDefaultsOnly, Transient, meta=(DisplayName="Interactable Widget"), Category="Computer|Widget Actor")
-	TSubclassOf<ALabInteractionWidgetContainer> WidgetComputerReference = { nullptr };
+	TSubclassOf<ALabInteractionWidgetContainer> WidgetInteractionReference = { nullptr };
+	
+	UPROPERTY(EditDefaultsOnly, Transient, meta=(DisplayName="Status Widget"), Category="Computer|Widget Actor")
+	TSubclassOf<ALabCheckStatusWidgetContainer> WidgetCheckStatusReference = { nullptr };
+
+	UPROPERTY(EditDefaultsOnly, Transient, meta=(DisplayName="Progress Widget"), Category="Computer|Widget Actor")
+	TSubclassOf<ALabCheckStatusProgressWidgetContainer> WidgetCheckProgressReference = { nullptr };
 
 	/* ------------------------------ CLASS FUNCTIONS ------------------------------- */
 
@@ -76,9 +100,15 @@ private:
 	
 	// Interactable Interface Implementation
 	virtual void StaticInteraction() override;
+
+	// Interactable Interface Implementation
+	virtual void OnGoingDynamicInteraction(const float HoldTime) override;
+
+	// Interactable Interface Implementation
+	virtual void CancelDynamicInteraction() override;
 	
 	// Interactable Interface Implementation
-	virtual void DynamicInteraction() override;
+	virtual void TriggerDynamicInteraction() override;
 
 	// Interactable Interface Implementation
 	virtual void VfxInteraction() override;

@@ -23,7 +23,13 @@ public:
 	virtual void StaticInteraction() = 0;
 
 	// Interaction that takes place while a button is hold down.
-	virtual void DynamicInteraction() = 0;
+	virtual void OnGoingDynamicInteraction(const float HoldTime) = 0;
+
+	// Interaction that takes place while a button is hold down.
+	virtual void CancelDynamicInteraction() = 0;
+	
+	// Interaction that takes place while a button is hold down.
+	virtual void TriggerDynamicInteraction() = 0;
 
 	// Interaction that is executed to highlight an element on the screen.
 	virtual void VfxInteraction() = 0;

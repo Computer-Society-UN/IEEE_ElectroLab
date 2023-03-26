@@ -4,16 +4,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ElectroLab/Public/Input/LabInputDataBase.h"
 #include "GameFramework/PlayerController.h"
 #include "LabPlayerController.generated.h"
 
 //Forward Declarations
 class UCommonActivatableWidget;
 class UInputMappingContext;
-class UInputAction;
 class ALabEngineerCharacter;
 class ULabUWPauseGame;
 class ULabHUDGameplay;
+class ULabInputDataBase;
 
 UCLASS(HideCategories = (Rendering, Replication, Input, Actor, Collision, LOD, Cooking, HLOD))
 class IEEE_ELECTROLAB_API ALabPlayerController : public APlayerController
@@ -24,27 +25,14 @@ class IEEE_ELECTROLAB_API ALabPlayerController : public APlayerController
 
 private:
 
-#pragma region EnhancedInput
-    
-	UPROPERTY(EditDefaultsOnly, Transient, Category="Player Controller|Input Actions")
+    UPROPERTY(Transient)
+	TObjectPtr<UEnhancedPlayerInput> PlayerInputReference;
+	
+	UPROPERTY(EditDefaultsOnly, Transient, Category="Player Controller|Input Mapping Context")
 	TObjectPtr<UInputMappingContext> LabMappingContext = { nullptr };
 
-	UPROPERTY(EditDefaultsOnly, Transient, Category="Player Controller|Input Actions")
-	TObjectPtr<UInputAction> ActionCharacterMovement = { nullptr };
-
-	UPROPERTY(EditDefaultsOnly, Transient, Category="Player Controller|Input Actions")
-	TObjectPtr<UInputAction> ActionCharacterLook = { nullptr };
-	
-	UPROPERTY(EditDefaultsOnly, Transient, Category="Player Controller|Input Actions")
-	TObjectPtr<UInputAction> ActionCharacterStaticInteraction = { nullptr };
-
-	UPROPERTY(EditDefaultsOnly, Transient, Category="Player Controller|Input Actions")
-	TObjectPtr<UInputAction> ActionCharacterDynamicInteraction = { nullptr };
-
-	UPROPERTY(EditDefaultsOnly, Transient, Category="Player Controller|Input Actions")
-	TObjectPtr<UInputAction> ActionPause = { nullptr };
-
-#pragma endregion EnhancedInput
+	UPROPERTY(EditDefaultsOnly, Transient, Category="Player Controller|Input Actions Data")
+	TObjectPtr<ULabInputDataBase> InputDataAsset = { nullptr };
 
 	UPROPERTY(Transient)
 	TObjectPtr<ALabEngineerCharacter> EngineerCharacterRef = { nullptr };
@@ -73,31 +61,45 @@ private:
 
 	/**
 	 * @brief Processes the input and sends the motion parameters to the character.
-	 * @param Value Input received from user controls (Mouse/Keyboard - Gamepads).
+	 * @param Value Input received from user controls (Mouse/Keyboard).
 	 */
 	UFUNCTION()
 	void CharacterMovement(const FInputActionValue& Value);
 
 	/**
 	 * @brief Processes the input and sends the parameters of the camera movement to the character.
-	 * @param Value Input received from user controls (Mouse/Keyboard - Gamepads).
+	 * @param Value Input received from user controls (Mouse/Keyboard).
 	 */
 	UFUNCTION()
 	void CharacterLook(const FInputActionValue& Value);
 
 	/**
 	 * @brief Processes the Input and sends the command to initiate a static interaction to the character.
-	 * @param Value Input received from user controls (Mouse/Keyboard - Gamepads).
+	 * @param Value Input received from user controls (Mouse/Keyboard).
 	 */
 	UFUNCTION()
 	void CharacterStaticInteraction(const FInputActionValue& Value);
-
+	
 	/**
-	 * @brief Processes the Input and sends the command to initiate a dynamic interaction to the character.
-	 * @param Value Input received from user controls (Mouse/Keyboard - Gamepads).
+	 * @brief Processes the Input and sends the time the button has been pressed.
+	 * @param Value Time the button has been held down.
 	 */
 	UFUNCTION()
-	void CharacterDynamicInteraction(const FInputActionValue& Value);
+	void CharacterOnGoingDynamicInteraction(const FInputActionValue& Value);
+	
+	/**
+	 * @brief It is triggered when the player releases the button and the required time has not been completed.
+	 * @param Value Input received from user controls (Mouse/Keyboard).
+	 */
+	UFUNCTION()
+	void CharacterCancelDynamicInteraction(const FInputActionValue& Value);
+	
+	/**
+	 * @brief Processes the Input and sends the command to initiate a dynamic interaction to the character.
+	 * @param Value Input received from user controls (Mouse/Keyboard).
+	 */
+	UFUNCTION()
+	void CharacterTriggerDynamicInteraction(const FInputActionValue& Value);
 
 	/**
 	 * @brief Processes the Input and sends the command to initiate a static interaction to the character.

@@ -15,12 +15,13 @@
 void ALabPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
 		if(LabMappingContext)
 		{
 			Subsystem->AddMappingContext(LabMappingContext, 0);
+			PlayerInputReference = Cast<UEnhancedPlayerInput>(PlayerInput);
 		}
 	}
 
@@ -42,11 +43,13 @@ void ALabPlayerController::SetupInputComponent()
 
 	if(const TObjectPtr<UEnhancedInputComponent> EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
-		EnhancedInputComponent->BindAction(ActionCharacterMovement, ETriggerEvent::Triggered, this, &ALabPlayerController::CharacterMovement);
-		EnhancedInputComponent->BindAction(ActionCharacterLook, ETriggerEvent::Triggered, this, &ALabPlayerController::CharacterLook);
-		EnhancedInputComponent->BindAction(ActionCharacterStaticInteraction, ETriggerEvent::Started, this, &ALabPlayerController::CharacterStaticInteraction);
-		EnhancedInputComponent->BindAction(ActionCharacterDynamicInteraction, ETriggerEvent::Triggered, this, &ALabPlayerController::CharacterDynamicInteraction);
-		EnhancedInputComponent->BindAction(ActionPause, ETriggerEvent::Started, this, &ALabPlayerController::PauseGame);
+		EnhancedInputComponent->BindAction(InputDataAsset->ActionCharacterMovement, ETriggerEvent::Triggered, this, &ALabPlayerController::CharacterMovement);
+		EnhancedInputComponent->BindAction(InputDataAsset->ActionCharacterLook, ETriggerEvent::Triggered, this, &ALabPlayerController::CharacterLook);
+		EnhancedInputComponent->BindAction(InputDataAsset->ActionCharacterStaticInteraction, ETriggerEvent::Started, this, &ALabPlayerController::CharacterStaticInteraction);
+		EnhancedInputComponent->BindAction(InputDataAsset->ActionCharacterDynamicInteraction, ETriggerEvent::Ongoing, this, &ALabPlayerController::CharacterOnGoingDynamicInteraction);
+		EnhancedInputComponent->BindAction(InputDataAsset->ActionCharacterDynamicInteraction, ETriggerEvent::Canceled, this, &ALabPlayerController::CharacterCancelDynamicInteraction);
+		EnhancedInputComponent->BindAction(InputDataAsset->ActionCharacterDynamicInteraction, ETriggerEvent::Triggered, this, &ALabPlayerController::CharacterTriggerDynamicInteraction);
+		EnhancedInputComponent->BindAction(InputDataAsset->ActionPause, ETriggerEvent::Started, this, &ALabPlayerController::PauseGame);
 	}
 }
 
@@ -76,11 +79,28 @@ void ALabPlayerController::CharacterStaticInteraction(const FInputActionValue& V
 	}
 }
 
-void ALabPlayerController::CharacterDynamicInteraction(const FInputActionValue& Value)
+void ALabPlayerController::CharacterOnGoingDynamicInteraction([[maybe_unused]] const FInputActionValue& Value)
+{
+	if (IsValid(EngineerCharacterRef) && IsValid(PlayerInputReference))
+	{
+		const float InputAmount = FInputActionInstance(*PlayerInputReference->FindActionInstanceData(InputDataAsset->ActionCharacterDynamicInteraction)).GetElapsedTime();
+		EngineerCharacterRef->CharacterOnGoingDynamicInteraction(InputAmount);
+	}
+}
+
+void ALabPlayerController::CharacterCancelDynamicInteraction(const FInputActionValue& Value)
+{
+	if (const bool InputAmount = Value.Get<bool>(); IsValid(EngineerCharacterRef) && !InputAmount)
+	{
+		EngineerCharacterRef->CharacterCancelDynamicInteraction();
+	}
+}
+
+void ALabPlayerController::CharacterTriggerDynamicInteraction(const FInputActionValue& Value)
 {
 	if (const bool InputAmount = Value.Get<bool>(); IsValid(EngineerCharacterRef) && InputAmount)
 	{
-		EngineerCharacterRef->CharacterDynamicInteraction();
+		EngineerCharacterRef->CharacterTriggerDynamicInteraction();
 	}
 }
 

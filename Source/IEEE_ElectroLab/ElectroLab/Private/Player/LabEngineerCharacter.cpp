@@ -104,11 +104,27 @@ void ALabEngineerCharacter::CharacterStaticInteraction()
 	}
 }
 
-void ALabEngineerCharacter::CharacterDynamicInteraction()
+void ALabEngineerCharacter::CharacterOnGoingDynamicInteraction(const float HoldTime)
 {
 	if (IsValid(ActorToInteract))
 	{
-		Cast<ILabIInteractable>(ActorToInteract)->DynamicInteraction();
+		Cast<ILabIInteractable>(ActorToInteract)->OnGoingDynamicInteraction(HoldTime);
+	}
+}
+
+void ALabEngineerCharacter::CharacterCancelDynamicInteraction()
+{
+	if (IsValid(ActorToInteract))
+	{
+		Cast<ILabIInteractable>(ActorToInteract)->CancelDynamicInteraction();
+	}
+}
+
+void ALabEngineerCharacter::CharacterTriggerDynamicInteraction()
+{
+	if (IsValid(ActorToInteract))
+	{
+		Cast<ILabIInteractable>(ActorToInteract)->TriggerDynamicInteraction();
 	}
 }
 

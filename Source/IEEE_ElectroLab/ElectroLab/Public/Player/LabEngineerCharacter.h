@@ -66,7 +66,13 @@ public:
 	void CharacterStaticInteraction();
 
 	UFUNCTION()
-	void CharacterDynamicInteraction();
+	void CharacterOnGoingDynamicInteraction(const float HoldTime);
+	
+	UFUNCTION()
+	void CharacterCancelDynamicInteraction();
+	
+	UFUNCTION()
+	void CharacterTriggerDynamicInteraction();
 	
 private:
 

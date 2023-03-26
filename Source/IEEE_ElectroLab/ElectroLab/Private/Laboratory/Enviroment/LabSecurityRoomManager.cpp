@@ -21,7 +21,6 @@ void ALabSecurityRoomManager::OnSystemCheck(const bool bCheckStatus)
 {
 	if (bCheckStatus)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("System Check: OK"));
 		VFXOnSystemCheck(bCheckStatus);
 	}
 	else

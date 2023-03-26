@@ -5,6 +5,7 @@
 // Unreal Engine Dependencies:
 #include "Kismet/GameplayStatics.h"
 // User Defined Dependencies:
+#include "AsyncLoadingScreenLibrary.h"
 #include "ElectroLab/Public/UMG/Menus/LabUWSubMenu.h"
 
 	/* ---------------------------- FUNCTION DEFINITIONS ---------------------------- */
@@ -35,7 +36,8 @@ void ULabUWPauseGame::ReloadLevel()
 	PlayerRef->SetShowMouseCursor(false);
 	
 	const FName CurrentLevelName = FName(*UGameplayStatics::GetCurrentLevelName(GetWorld(), true));
-	TimerDelegatePauseMenu.BindUFunction(this, "OpenLevel",CurrentLevelName);
+	TimerDelegatePauseMenu.BindUFunction(this, "OpenLevel", CurrentLevelName);
+	UAsyncLoadingScreenLibrary::SetEnableLoadingScreen(true);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandlePauseMenu, TimerDelegatePauseMenu, 0.25, false);
 }
 
@@ -55,7 +57,8 @@ void ULabUWPauseGame::OpenSettingsMenu()
 void ULabUWPauseGame::LoadSelectorLevel()
 {
 	UGameplayStatics::GetPlayerController(GetWorld(),0)->SetPause(false);;
-	
+
+	UAsyncLoadingScreenLibrary::SetEnableLoadingScreen(false);
 	TimerDelegatePauseMenu.BindUFunction(this, "OpenLevel", FName("Map_LaboratorySelector"));
 	GetWorld()->GetTimerManager().SetTimer(TimerHandlePauseMenu, TimerDelegatePauseMenu, 0.25, false);
 }
@@ -63,7 +66,8 @@ void ULabUWPauseGame::LoadSelectorLevel()
 void ULabUWPauseGame::LoadMainMenuLevel()
 {
 	UGameplayStatics::GetPlayerController(GetWorld(),0)->SetPause(false);;
-	
+
+	UAsyncLoadingScreenLibrary::SetEnableLoadingScreen(false);
 	TimerDelegatePauseMenu.BindUFunction(this, "OpenLevel", FName("Map_MainMenu"));
 	GetWorld()->GetTimerManager().SetTimer(TimerHandlePauseMenu, TimerDelegatePauseMenu, 0.25, false);
 }

@@ -13,6 +13,7 @@ class UArrowComponent;
 class UCommonUserWidget;
 class ALabInteractionWidgetContainer;
 enum ESafetyEquipmentType;
+enum EInputDataActions;;
 
 UCLASS(HideCategories = (Rendering, Replication, Input, Actor, Collision, LOD, Cooking, HLOD))
 class IEEE_ELECTROLAB_API ALabPPE : public AActor, public ILabIInteractable
@@ -41,6 +42,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, meta=(DisplayName="Safety Equipment Type"), Category="PPE|Properties")
 	TEnumAsByte<ESafetyEquipmentType> EquipmentType = {};
+
+	UPROPERTY(EditDefaultsOnly, meta=(DisplayName="PPE Interaction Type"), Category="PPE|Properties")
+	TEnumAsByte<EInputDataActions> InteractionType = {};
 	
 	UPROPERTY(Transient)
 	TObjectPtr<ALabInteractionWidgetContainer> WidgetPPE = { nullptr };
@@ -68,9 +72,15 @@ private:
 
 	// Interactable Interface Implementation
 	virtual void StaticInteraction() override;
+
+	// Interactable Interface Implementation
+	virtual void OnGoingDynamicInteraction(const float HoldTime) override;
+
+	// Interactable Interface Implementation
+	virtual void CancelDynamicInteraction() override;
 	
 	// Interactable Interface Implementation
-	virtual void DynamicInteraction() override;
+	virtual void TriggerDynamicInteraction() override;
 
 	// Interactable Interface Implementation
 	virtual void VfxInteraction() override;

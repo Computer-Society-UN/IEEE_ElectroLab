@@ -49,9 +49,11 @@ void ALabPPE::StaticInteraction()
 	Destroy();
 }
 
-void ALabPPE::DynamicInteraction()
-{
-}
+void ALabPPE::OnGoingDynamicInteraction(const float HoldTime){}
+
+void ALabPPE::CancelDynamicInteraction(){}
+
+void ALabPPE::TriggerDynamicInteraction(){}
 
 void ALabPPE::VfxInteraction()
 {
@@ -60,7 +62,7 @@ void ALabPPE::VfxInteraction()
 	if (WidgetPPEReference)
 	{
 		WidgetPPE = GetWorld()->SpawnActor<ALabInteractionWidgetContainer>(WidgetPPEReference,ArrowComponent->GetComponentLocation(),ArrowComponent->GetComponentRotation());
-		WidgetPPE->SetComponentNameToDisplay(ComponentName);
+		WidgetPPE->SetComponentNameToDisplay(ComponentName, InteractionType);
 	}
 }
 

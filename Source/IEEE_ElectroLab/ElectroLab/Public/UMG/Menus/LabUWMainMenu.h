@@ -62,7 +62,7 @@ private:
 	TSubclassOf<ULabUWSubMenu> WidgetCreditsRef;
 
 	/* ------------------------------ CLASS FUNCTIONS ------------------------------- */
-
+	
 private:
 
 	/**

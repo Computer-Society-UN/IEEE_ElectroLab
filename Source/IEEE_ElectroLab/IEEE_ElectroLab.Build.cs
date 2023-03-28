@@ -13,7 +13,12 @@ public class IEEE_ElectroLab : ModuleRules
 			"Core", "CoreUObject", "Engine", "InputCore", "UMG", "CommonUI", "SlateCore", "EnhancedInput"
 		});
 		
-		PrivateDependencyModuleNames.AddRange(new string[] { "AsyncLoadingScreen" });
+		PrivateDependencyModuleNames.AddRange(new string[]
+        {
+        	"AsyncLoadingScreen",
+        	"OnlineSubsystem",
+        	"OnlineSubsystemUtils"
+        });
 
 		PrivateIncludePaths.Add("IEEE_ElectroLab");
 		
